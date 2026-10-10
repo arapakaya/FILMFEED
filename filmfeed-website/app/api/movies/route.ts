@@ -6,75 +6,43 @@ export async function GET(request: Request) {
   try {
     const dataDir = path.join(process.cwd(), 'data')
     let movies: any[] = []
+    const seen = new Set()
 
-    // 1. Read CineSubz Movies
-    const cinesubzPath = path.join(dataDir, 'cinesubz_result.json')
-    if (fs.existsSync(cinesubzPath)) {
-      try {
-        const raw = fs.readFileSync(cinesubzPath, 'utf-8')
-        const parsed = JSON.parse(raw)
-        const items = Array.isArray(parsed) ? parsed : (parsed.movies || parsed.cards || [])
-        items.forEach((item: any) => {
-          const id = item.post_id || item.id || encodeURIComponent(item.title || item.url)
-          movies.push({
-            id: String(id),
-            title: item.title,
-            poster: item.poster || item.banner,
-            description: item.description || `Watch ${item.title} with Sinhala Subtitles`,
-            category: 'Movie',
-            quality: item.quality || 'HD',
-            year: item.year || '2024',
-            url: item.url,
-            details: item.details || {}
-          })
-        })
-      } catch (e) {
-        console.error('Error reading cinesubz_result.json:', e)
-      }
-    }
+    const files = [
+      { name: 'cinesubz_result.json', category: 'Movie' },
+      { name: 'sinhalasub_result.json', category: 'SinhalaSub Movie' },
+      { name: 'cartoons_lk_enhanced.json', category: 'Sinhala Dubbed' }
+    ]
 
-    // 2. Read Cartoons.lk (Sinhala Dubbed Movies & Cartoons)
-    const cartoonsPath = path.join(dataDir, 'cartoons_lk_enhanced.json')
-    if (fs.existsSync(cartoonsPath)) {
-      try {
-        const raw = fs.readFileSync(cartoonsPath, 'utf-8')
-        const items = JSON.parse(raw)
-        if (Array.isArray(items)) {
-          items.forEach((item: any, idx: number) => {
-            const id = `cartoons_${idx}_${encodeURIComponent(item.title)}`
-            const validPoster = (item.banner && item.banner.startsWith('http')) ? item.banner : (item.poster && item.poster.startsWith('http') ? item.poster : null)
-            movies.push({
-              id,
-              title: item.title,
-              poster: validPoster || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500',
-              description: item.description || 'Sinhala Dubbed Movie / Cartoon',
-              category: 'Sinhala Dubbed',
-              quality: 'Sinhala Dub',
-              year: '2024',
-              url: item.url,
-              details: { language: 'Sinhala Dubbed' }
+    for (const file of files) {
+      const filePath = path.join(dataDir, file.name)
+      if (fs.existsSync(filePath)) {
+        try {
+          const raw = fs.readFileSync(filePath, 'utf-8')
+          const items = JSON.parse(raw)
+          if (Array.isArray(items)) {
+            items.forEach((item: any) => {
+              if (item.category === 'TV Series') return // Skip TV series on movies route
+              const id = item.id || encodeURIComponent(item.title)
+              if (!seen.has(id) && item.title) {
+                seen.add(id)
+                movies.push({
+                  id: String(id),
+                  title: item.title,
+                  poster: item.poster || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500',
+                  description: item.description || `Watch ${item.title} with Sinhala Subtitles / Sinhala Dubbed`,
+                  category: item.category || file.category,
+                  quality: item.quality || 'HD',
+                  year: item.year || '2024',
+                  url: item.url
+                })
+              }
             })
-          })
+          }
+        } catch (e) {
+          console.error(`Error reading ${file.name}:`, e)
         }
-      } catch (e) {
-        console.error('Error reading cartoons_lk_enhanced.json:', e)
       }
-    }
-
-    // Fallback data if empty
-    if (movies.length === 0) {
-      movies = [
-        {
-          id: 'avatar-way-of-water',
-          title: 'Avatar: The Way of Water (2022) Sinhala Subtitles',
-          poster: 'https://cinesubz.lk/wp-content/uploads/2026/03/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg',
-          description: 'Set more than a decade after the events of the first film...',
-          category: 'Movie',
-          quality: '720p / 1080p',
-          year: '2022',
-          url: 'https://cinesubz.co/movies/avatar-the-way-of-water-2022-sinhala-subtitles/'
-        }
-      ]
     }
 
     return NextResponse.json({ movies, count: movies.length })

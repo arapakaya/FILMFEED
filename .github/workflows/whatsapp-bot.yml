@@ -1,58 +1,67 @@
-name: WhatsApp Bot - 24/7
+name: WhatsApp Bot 24/7 Continuous Loop
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
   schedule:
-    - cron: '0 */6 * * *' # Keep alive every 6 hours
+    - cron: '0 */5 * * *'
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
-      
+          node-version: '20'
+
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
-      
-      - name: Install Python dependencies
+          python-version: '3.11'
+
+      - name: Install Python Dependencies
         run: |
-          pip install requests beautifulsoup4 lxml
-      
-      - name: Install Bot dependencies
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4 lxml cryptography
+
+      - name: Install Bot Dependencies
         run: |
           cd whatsapp-bot
           npm install
-      
-      - name: Restore auth session
-        uses: actions/cache@v3
+
+      - name: Restore WhatsApp Session Cache
+        uses: actions/cache@v4
         with:
           path: whatsapp-bot/auth_info_baileys
-          key: ${{ runner.os }}-whatsapp-auth-${{ github.sha }}
+          key: ${{ runner.os }}-whatsapp-session-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-whatsapp-auth-
-      
-      - name: Run WhatsApp Bot
+            ${{ runner.os }}-whatsapp-session-
+
+      - name: Run WhatsApp Bot (5.5 Hours Run)
         env:
           GROUP_JID: ${{ secrets.GROUP_JID }}
         run: |
           cd whatsapp-bot
-          timeout 21600 node bot.js || true
+          # Run for 5 hours 30 minutes (19800 seconds) then gracefully hand off to next run
+          timeout 19800s node bot-action.js || true
         continue-on-error: true
-      
-      - name: Save auth session
-        uses: actions/cache@v3
+
+      - name: Save WhatsApp Session Cache
+        uses: actions/cache/save@v4
         if: always()
         with:
           path: whatsapp-bot/auth_info_baileys
-          key: ${{ runner.os }}-whatsapp-auth-${{ github.sha }}
+          key: ${{ runner.os }}-whatsapp-session-${{ github.run_id }}
+
+      - name: Trigger Next 24/7 Loop Run
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run whatsapp-bot.yml --ref main || true

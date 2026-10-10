@@ -3,6 +3,7 @@ const pino = require('pino');
 const fs = require('fs-extra');
 const path = require('path');
 const axios = require('axios');
+const qrcode = require('qrcode-terminal');
 const { exec } = require('child_process');
 
 // Configuration
@@ -256,7 +257,6 @@ async function startBot() {
 
     const sock = makeWASocket({
         auth: state,
-        printQRInTerminal: true,
         logger: pino({ level: 'silent' }),
         browser: ['FilmFeed Bot', 'Chrome', '1.0.0']
     });
@@ -268,7 +268,8 @@ async function startBot() {
 
         if (qr) {
             console.log('\n==========================================');
-            console.log('--- SCAN WHATSAPP QR CODE ---');
+            console.log('--- SCAN WHATSAPP QR CODE BELOW ---');
+            qrcode.generate(qr, { small: true });
             console.log('==========================================\n');
         }
 
@@ -339,5 +340,5 @@ async function startBot() {
 }
 
 // Start
-console.log('🤖 Starting FilmFeed Bot in GitHub Actions...');
+console.log('🤖 Starting FilmFeed Bot...');
 startBot().catch(console.error);

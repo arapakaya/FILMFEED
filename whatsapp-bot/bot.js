@@ -3,12 +3,13 @@ const pino = require('pino');
 const fs = require('fs-extra');
 const path = require('path');
 const axios = require('axios');
+const qrcode = require('qrcode-terminal');
 const { exec } = require('child_process');
 
 // Configuration
-const GROUP_JID = process.env.GROUP_JID || '120363354181677834@g.us'; // WhatsApp Group JID
+const GROUP_JID = process.env.GROUP_JID || '120363354181677834@g.us';
 const DOWNLOAD_DIR = path.join(__dirname, 'downloads');
-const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB limit in bytes
+const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB
 
 // In-memory queue & user request tracking
 const requestQueue = [];
@@ -25,7 +26,7 @@ async function searchMovieWithScraper(movieName, quality) {
     const scraperScript = path.join(__dirname, 'search_movie.py');
     const cmd = `python "${scraperScript}" "${movieName.replace(/"/g, '\\"')}" "${quality || '720p'}"`;
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         exec(cmd, { timeout: 120000 }, (error, stdout, stderr) => {
             if (error) {
                 console.error('Scraper execution error:', stderr || error.message);
@@ -56,7 +57,7 @@ async function downloadMovie(url, filename) {
     const filePath = path.join(DOWNLOAD_DIR, filename);
 
     try {
-        console.log(`Downloading: ${filename} from ${url}`);
+        console.log(`Downloading: ${filename}`);
 
         const response = await axios({
             method: 'GET',
@@ -65,7 +66,7 @@ async function downloadMovie(url, filename) {
             timeout: 1800000, // 30 mins
             maxRedirects: 10,
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             }
         });
 
@@ -80,17 +81,13 @@ async function downloadMovie(url, filename) {
 
         response.data.on('data', (chunk) => {
             downloadedSize += chunk.length;
-            if (totalSize > 0) {
-                const progress = ((downloadedSize / totalSize) * 100).toFixed(1);
-                process.stdout.write(`\rDownloading ${filename}: ${progress}%`);
-            }
         });
 
         response.data.pipe(writer);
 
         return new Promise((resolve, reject) => {
             writer.on('finish', () => {
-                console.log(`\n✓ Download finished: ${filename}`);
+                console.log(`✓ Download finished: ${filename}`);
                 resolve({ filePath, size: downloadedSize || totalSize });
             });
             writer.on('error', (err) => {
@@ -116,7 +113,6 @@ async function processRequest(sock, request) {
     try {
         console.log(`\n--- Processing Request #${requestNum} for ${requesterName}: ${movieName} (${quality}) ---`);
 
-        // Send processing status
         await sock.sendMessage(targetJid, {
             text: `🎬 *Processing Request #${requestNum}*\n` +
                   `👤 *Requested by*: ${requesterName}\n` +
@@ -125,13 +121,12 @@ async function processRequest(sock, request) {
                   `⏳ Searching database & generating direct download link...`
         });
 
-        // Search for movie details
         const movieDetails = await searchMovieWithScraper(movieName, quality);
 
         if (!movieDetails || !movieDetails.downloadUrl) {
             await sock.sendMessage(targetJid, {
                 text: `❌ Sorry *${requesterName}*, could not find "${movieName}".\n\n` +
-                      `Please check the spelling or search on https://filmfeed.vercel.app`
+                      `Please check title on https://filmfeed-website.vercel.app`
             });
             return;
         }
@@ -174,23 +169,20 @@ async function processRequest(sock, request) {
             await sock.sendMessage(targetJid, { text: detailsCaption });
         }
 
-        // Step 2: Download file to server
+        // Step 2: Download file
         const cleanName = movieName.replace(/[^a-zA-Z0-9]/g, '_');
         const filename = `${cleanName}_${quality}_filmfeed.mp4`;
         const { filePath, size } = await downloadMovie(movieDetails.downloadUrl, filename);
 
-        // Double check size after download
         if (size > MAX_FILE_SIZE) {
-            const downloadedSizeGB = (size / (1024 * 1024 * 1024)).toFixed(2);
             await sock.sendMessage(targetJid, {
-                text: `⚠️ *File Size (${downloadedSizeGB} GB) Exceeds 2GB Limit!*\n\n` +
-                      `Direct Download Link:\n${movieDetails.downloadUrl}`
+                text: `⚠️ *File Exceeds 2GB Limit!*\n\nDirect Download Link:\n${movieDetails.downloadUrl}`
             });
             await fs.remove(filePath);
             return;
         }
 
-        // Step 3: Upload as Document to WhatsApp
+        // Step 3: Upload Document
         await sock.sendMessage(targetJid, {
             text: `📤 *Uploading file to WhatsApp group...*`
         });
@@ -202,13 +194,13 @@ async function processRequest(sock, request) {
             caption: `🎬 *${movieDetails.title}*\n🎥 Quality: ${quality}\n👤 Requested by: ${requesterName}`
         });
 
-        // Step 4: Immediately Delete file from VPS/Server disk
+        // Step 4: Delete file immediately
         await fs.remove(filePath);
         console.log(`✓ Deleted local file: ${filePath}`);
 
         // Step 5: Send Success Message
         await sock.sendMessage(targetJid, {
-            text: `✅ *${requesterName}*, your requested movie "${movieDetails.title}" is uploaded!\n\n🍿 Enjoy watching!`
+            text: `✅ *${requesterName}*, your movie "${movieDetails.title}" is uploaded!\n\n🍿 Enjoy watching!`
         });
 
     } catch (error) {
@@ -220,7 +212,7 @@ async function processRequest(sock, request) {
 }
 
 /**
- * Process queue one item at a time
+ * Process queue sequentially
  */
 async function processQueue(sock) {
     if (isProcessing || requestQueue.length === 0) {
@@ -238,20 +230,12 @@ async function processQueue(sock) {
 
     isProcessing = false;
 
-    // Process next item in queue
     if (requestQueue.length > 0) {
         setTimeout(() => processQueue(sock), 1500);
     }
 }
 
-/**
- * Parses incoming WhatsApp text for FilmFeed movie request
- */
 function parseMovieRequest(message) {
-    // Expected formats:
-    // "FilmFeed Request: Avatar | Quality: 720p | Token: abc123xyz"
-    // "Avatar | 720p | abc123xyz"
-
     let cleanMsg = message.replace(/^FilmFeed Request:\s*/i, '').trim();
     const parts = cleanMsg.split('|').map(p => p.trim());
 
@@ -268,15 +252,11 @@ function parseMovieRequest(message) {
     return null;
 }
 
-/**
- * Start Baileys WhatsApp Bot
- */
 async function startBot() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
 
     const sock = makeWASocket({
         auth: state,
-        printQRInTerminal: true,
         logger: pino({ level: 'silent' }),
         browser: ['FilmFeed Bot', 'Chrome', '1.0.0']
     });
@@ -287,7 +267,10 @@ async function startBot() {
         const { connection, lastDisconnect, qr } = update;
 
         if (qr) {
-            console.log('--- SCAN WHATSAPP QR CODE ---');
+            console.log('\n==========================================');
+            console.log('--- SCAN WHATSAPP QR CODE BELOW ---');
+            qrcode.generate(qr, { small: true });
+            console.log('==========================================\n');
         }
 
         if (connection === 'close') {
@@ -319,7 +302,6 @@ async function startBot() {
         const request = parseMovieRequest(messageText);
 
         if (request) {
-            // Track request count for this user
             userRequestCounts[senderJid] = (userRequestCounts[senderJid] || 0) + 1;
             const requestNum = userRequestCounts[senderJid];
 
@@ -358,5 +340,5 @@ async function startBot() {
 }
 
 // Start
-console.log('🤖 Starting FilmFeed WhatsApp Bot...');
+console.log('🤖 Starting FilmFeed Bot...');
 startBot().catch(console.error);

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import Header from './components/Header'
 
 export const metadata: Metadata = {
   title: 'FilmFeed - Free Movies, TV Series & Sinhala Dubbed Downloads',
@@ -23,32 +24,8 @@ export default function RootLayout({
         {/* Global Top Ad Banner */}
         <div id="container-2b2b0152bf2e6dc65de7161495e8eb8e"></div>
 
-        <nav className="bg-black/90 border-b border-gray-800 sticky top-0 z-50 backdrop-blur-md">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-16 items-center">
-              <a href="/" className="flex items-center gap-2 group">
-                <span className="text-2xl font-black bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent group-hover:from-red-400 group-hover:to-red-500 transition">
-                  FILMFEED
-                </span>
-                <span className="text-[10px] uppercase font-extrabold bg-red-600 text-white px-2 py-0.5 rounded-full">
-                  BOT ACTIVE
-                </span>
-              </a>
-              <div className="flex items-center space-x-6 text-sm font-semibold">
-                <a href="/" className="hover:text-red-500 transition text-gray-200">Movies</a>
-                <a href="/series" className="hover:text-red-500 transition text-gray-200">TV Series & Anime</a>
-                <a
-                  href="https://wa.me/94760372547"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="bg-green-600 hover:bg-green-500 text-white px-3.5 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition text-xs"
-                >
-                  <span>💬</span> Bot: 0760372547
-                </a>
-              </div>
-            </div>
-          </div>
-        </nav>
+        {/* Navigation Bar with Hamburger Menu */}
+        <Header />
 
         <main className="flex-1">
           {children}

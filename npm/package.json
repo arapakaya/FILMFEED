@@ -1,0 +1,28 @@
+{
+  "name": "cinesubz-scraper",
+  "version": "1.0.0",
+  "description": "Scrape CineSubz movie pages for banner, details, description and ONE-CLICK direct download links (no redirects, files >= 1 GB)",
+  "main": "index.js",
+  "bin": {
+    "cinesubz": "bin/cinesubz.js"
+  },
+  "scripts": {
+    "test": "node test/test.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "index.js",
+    "bin/",
+    "README.md"
+  ],
+  "keywords": [
+    "cinesubz",
+    "scraper",
+    "movie",
+    "sinhala-subtitles",
+    "direct-download"
+  ],
+  "license": "MIT"
+}

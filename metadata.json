@@ -1,0 +1,6 @@
+{
+  "name": "CodeBug Reviewer",
+  "description": "Futuristic smart code and bug reviewer with real-time error detection, AI diagnostics, and instant clean code fixes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

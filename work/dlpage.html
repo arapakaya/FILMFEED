@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>CineSubz - Loading...</title>
+    <style>
+        :root {
+            --primary-red: #DC2626;
+            --primary-red-dark: #991B1B;
+            --primary-red-light: #EF4444;
+            --bg-dark: #0A0A0A;
+            --bg-card: #141414;
+            --text-white: #FFFFFF;
+            --text-gray: #A3A3A3;
+            --border-dark: #262626;
+            --border-red: rgba(220, 38, 38, 0.3);
+            --glow-red: rgba(220, 38, 38, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-dark);
+            background-image: 
+                radial-gradient(ellipse at top, rgba(220, 38, 38, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(220, 38, 38, 0.05) 0%, transparent 40%);
+            color: var(--text-white);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 520px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: 20px;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.03);
+            overflow: hidden;
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-accent {
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-red-dark), var(--primary-red), var(--primary-red-light));
+            box-shadow: 0 2px 20px var(--glow-red);
+        }
+
+        .content {
+            padding: 48px 32px;
+            text-align: center;
+        }
+
+        .loading-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .logo-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            animation: logoFloat 3s ease-in-out infinite, logoPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { filter: drop-shadow(0 0 20px var(--glow-red)); }
+            50% { filter: drop-shadow(0 0 40px var(--glow-red)); }
+        }
+
+        .logo-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(220, 38, 38, 0.3) 0%, transparent 70%);
+            animation: glowPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.8; }
+        }
+
+        .spinning-ring {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 3px solid transparent;
+            border-top-color: var(--primary-red);
+            border-right-color: var(--primary-red-light);
+            border-radius: 50%;
+            animation: spin 2s linear infinite;
+        }
+
+        .spinning-ring-outer {
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 120%;
+            height: 120%;
+            border: 2px solid transparent;
+            border-bottom-color: var(--primary-red-dark);
+            border-left-color: var(--primary-red);
+            border-radius: 50%;
+            animation: spinReverse 3s linear infinite;
+            opacity: 0.5;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spinReverse {
+            to {
+                transform: rotate(-360deg);
+            }
+        }
+
+        .logo-img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            animation: logoBreath 3s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        @keyframes logoBreath {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.08); }
+        }
+
+        .loading-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-white);
+        }
+
+        .loading-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-gray);
+            margin-top: 8px;
+        }
+
+        .pulse-bars {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .pulse-bar {
+            width: 4px;
+            height: 20px;
+            background: var(--primary-red);
+            border-radius: 2px;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        .pulse-bar:nth-child(1) { animation-delay: 0s; }
+        .pulse-bar:nth-child(2) { animation-delay: 0.1s; }
+        .pulse-bar:nth-child(3) { animation-delay: 0.2s; }
+        .pulse-bar:nth-child(4) { animation-delay: 0.3s; }
+        .pulse-bar:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scaleY(0.5);
+                opacity: 0.5;
+            }
+            50% {
+                transform: scaleY(1);
+                opacity: 1;
+            }
+        }
+
+        .error-container {
+            display: none;
+        }
+
+        .error-container.show {
+            display: block;
+        }
+
+        .loading-container.hide {
+            display: none;
+        }
+
+        .error-icon {
+            width: 64px;
+            height: 64px;
+            background: rgba(220, 38, 38, 0.1);
+            border: 2px solid var(--border-red);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+
+        .error-icon svg {
+            width: 32px;
+            height: 32px;
+            color: var(--primary-red);
+        }
+
+        .error-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--primary-red-light);
+        }
+
+        .error-message {
+            font-size: 0.95rem;
+            color: var(--text-gray);
+            margin-bottom: 24px;
+        }
+
+        .error-path {
+            font-size: 0.75rem;
+            color: var(--text-gray);
+            word-break: break-all;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: var(--text-white);
+            background: linear-gradient(135deg, var(--primary-red-dark) 0%, var(--primary-red) 100%);
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 15px var(--glow-red);
+            border: none;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--glow-red);
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 12px;
+            }
+            .container {
+                border-radius: 16px;
+            }
+            .content {
+                padding: 36px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-accent"></div>
+        <div class="content">
+            <div class="loading-container" id="loadingContainer">
+                <div class="loading-wrapper">
+                    <div class="logo-container">
+                        <div class="logo-glow"></div>
+                        <div class="spinning-ring-outer"></div>
+                        <div class="spinning-ring"></div>
+                        <img src="https://cinesubz.lk/wp-content/uploads/2025/06/Favicon-20250616.png" alt="CineSubz Logo" class="logo-img">
+                    </div>
+                    <div>
+                        <div class="loading-text">Preparing Your Download</div>
+                        <div class="loading-subtitle">Please wait while we fetch file information...</div>
+                    </div>
+                    <div class="pulse-bars">
+                        <div class="pulse-bar"></div>
+                        <div class="pulse-bar"></div>
+                        <div class="pulse-bar"></div>
+                        <div class="pulse-bar"></div>
+                        <div class="pulse-bar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="error-container" id="errorContainer">
+                <div class="error-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <div class="error-title" id="errorTitle">Error Loading File</div>
+                <div class="error-message" id="errorMessage">Something went wrong. Please try again.</div>
+                <div class="error-path" id="errorPath"></div>
+                <button class="btn" onclick="location.reload()">Try Again</button>
+                <a href="https://t.me/CineSubzAdmin" class="btn" style="margin-left: 8px; background: transparent; border: 1px solid var(--primary-red);">Contact Admin</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            var currentPath = window.location.pathname + window.location.search;
+            var apiUrl = '/api/download-data' + currentPath;
+            
+            fetch(apiUrl, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(function(response) {
+                return response.json().then(function(data) {
+                    return { status: response.status, data: data };
+                });
+            })
+            .then(function(result) {
+                if (result.status === 200 && result.data.redirect) {
+                    window.location.href = result.data.redirect;
+                } else if (result.status !== 200 || result.data.error) {
+                    showError(result.data.error || 'Unknown error occurred');
+                } else {
+                    window.location.href = result.data.redirect;
+                }
+            })
+            .catch(function(err) {
+                showError('Network error. Please check your connection.');
+            });
+
+            function showError(message) {
+                document.getElementById('loadingContainer').classList.add('hide');
+                document.getElementById('errorContainer').classList.add('show');
+                document.getElementById('errorMessage').textContent = message;
+                document.getElementById('errorPath').textContent = 'Path: ' + currentPath;
+            }
+        })();
+    </script>
+</body>
+</html>

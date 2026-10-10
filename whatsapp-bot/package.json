@@ -1,0 +1,24 @@
+{
+  "name": "filmfeed-whatsapp-bot",
+  "version": "1.0.0",
+  "description": "WhatsApp bot for movie downloads",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "dev": "nodemon bot.js"
+  },
+  "keywords": ["whatsapp", "bot", "movies"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.8",
+    "pino": "^8.19.0",
+    "qrcode-terminal": "^0.12.0",
+    "axios": "^1.6.7",
+    "fs-extra": "^11.2.0",
+    "file-type": "^18.7.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
+}

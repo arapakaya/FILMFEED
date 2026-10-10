@@ -1,0 +1,58 @@
+name: WhatsApp Bot - 24/7
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *' # Keep alive every 6 hours
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install Python dependencies
+        run: |
+          pip install requests beautifulsoup4 lxml
+      
+      - name: Install Bot dependencies
+        run: |
+          cd whatsapp-bot
+          npm install
+      
+      - name: Restore auth session
+        uses: actions/cache@v3
+        with:
+          path: whatsapp-bot/auth_info_baileys
+          key: ${{ runner.os }}-whatsapp-auth-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-whatsapp-auth-
+      
+      - name: Run WhatsApp Bot
+        env:
+          GROUP_JID: ${{ secrets.GROUP_JID }}
+        run: |
+          cd whatsapp-bot
+          timeout 21600 node bot.js || true
+        continue-on-error: true
+      
+      - name: Save auth session
+        uses: actions/cache@v3
+        if: always()
+        with:
+          path: whatsapp-bot/auth_info_baileys
+          key: ${{ runner.os }}-whatsapp-auth-${{ github.sha }}

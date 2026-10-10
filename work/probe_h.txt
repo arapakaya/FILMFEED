@@ -1,0 +1,18 @@
+HTTP/1.1 206 Partial Content
+Date: Thu, 08 Oct 2026 08:11:58 GMT
+Content-Type: video/mp4
+Content-Length: 2048
+Connection: keep-alive
+Content-Range: bytes 0-2047/2413545238
+CF-Ray: a473ad8b3cf76357-CMB
+CF-Cache-Status: DYNAMIC
+Accept-Ranges: bytes
+Access-Control-Allow-Origin: *
+Cache-Control: public, max-age=604800, immutable
+Content-Disposition: attachment; filename="Avatar Fire and Ash (2025) English WEB-[CineSubz.co]-480p.mp4"
+ETag: "98a8a07e32c627f34d182f38772867ed-461"
+Last-Modified: Fri, 25 Sep 2026 20:40:34 GMT
+Server: cloudflare
+Report-To: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=iNA7r6hoN2BBsV01E4ammCyXqZFvGDJ6QygDSJXZLdHp4y4DvsWmDon8UeuZc7f5CGveuIEADXhI9DsE%2BPwqSnAQGZXTnymuWUy%2FW69KmWEVAB7kfX%2FKNpLn12CKrj%2BwEkG1epgmRos1DTxDyqgMh9LV5eSzWc4%3D"}]}
+Nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+

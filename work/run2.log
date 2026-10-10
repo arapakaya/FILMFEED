@@ -1,0 +1,106 @@
+Scraping https://cinesubz.co/movies/avatar-fire-and-ash-2025-sinhala-subtitles/
+  [movie] Avatar: Fire and Ash (2025) Sinhala Subtitles | සිංහල උපසිරැසි සමඟ — 3 download entries
+  [filter] >= 1.0 GB: 3 link(s), skipped 0
+Resolving: WEB-DL 1080p • 7.2 GB • English (https://cinesubz.lk/zt-links/yhewf42lpf/)
+  [drive] target ok
+  [drive] 9 payloads, 191 key candidates
+  [drive] post 1: candidate https://drive06.supercloud2.space/Avatar%20Fire%20and%20Ash%20(2025)%20English%20WEB-%5BCineSubz.co%
+  [drive] post 2: The read operation timed out
+  [drive] post 3: HTTP 404
+  [drive] post 4: HTTP 404
+  [drive] post 5: empty (8471B, err='')
+  [drive] post 6: HTTP 404
+  [drive] post 7: empty (8471B, err='')
+  [drive] post 8: HTTP 404
+  [drive] post 9: HTTP 404
+  [drive] target ok
+  [drive] 9 payloads, 196 key candidates
+  [drive] post 1: empty (8471B, err='')
+  [drive] post 2: empty (8471B, err='')
+  [drive] post 3: HTTP 404
+  [drive] post 4: candidate https://drive06.supercloud2.space/Avatar%20Fire%20and%20Ash%20(2025)%20English%20WEB-%5BCineSubz.co%
+  [drive] post 5: HTTP 404
+  [drive] post 6: HTTP 404
+  [drive] post 7: empty (8471B, err='')
+  [drive] post 8: HTTP 404
+  [drive] post 9: HTTP 404
+  [verify] 206 redirects=0 type=video/mp4 size=7.24GB
+Resolving: WEB-DL 720p • 3.8 GB • English (https://cinesubz.lk/zt-links/d0uu9ahthw/)
+  [drive] target ok
+  [drive] 9 payloads, 196 key candidates
+  [drive] post 1: candidate https://telegram.me/cstg03bot?start=Z2V0XzIyMzUwNzQzOTFfNDExMDQ
+  [drive] post 2: empty (8470B, err='')
+  [drive] post 3: candidate https://drive06.supercloud2.space/Avatar%20Fire%20and%20Ash%20(2025)%20English%20WEB-%5BCineSubz.co%
+  [drive] post 4: The read operation timed out
+  [drive] post 5: <urlopen error [Errno 11001] getaddrinfo failed>
+  [drive] post 6: <urlopen error [Errno 11001] getaddrinfo failed>
+  [drive] post 7: <urlopen error [Errno 11001] getaddrinfo failed>
+  [drive] post 8: <urlopen error [Errno 11001] getaddrinfo failed>
+  [drive] post 9: <urlopen error [Errno 11001] getaddrinfo failed>
+  [drive] loader failed: <urlopen error [Errno 11001] getaddrinfo failed>
+Traceback (most recent call last):
+  File "C:\Users\akash\AppData\Local\Python\pythoncore-3.14-64\Lib\urllib\request.py", line 1321, in do_open
+    h.request(req.get_method(), req.selector, req.data, headers,
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              encode_chunked=req.has_header('Transfer-encoding'))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\akash\AppData\Local\Python\pythoncore-3.14-64\Lib\http\client.py", line 1358, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\akash\AppData\Local\Python\pythoncore-3.14-64\Lib\http\client.py", line 1404, in _send_request
+    self.endheaders(body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\akash\AppData\Local\Python\pythoncore-3.14-64\Lib\http\client.py", line 1353, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\akash\AppData\Local\Python\pythoncore-3.14-64\Lib\http\client.py", line 1113, in _send_output
+    self.send(msg)
+    ~~~~~~~~~^^^^^
+  File "C:\Users\akash\AppData\Local\Python\pythoncore-3.14-64\Lib\http\client.py", line 1057, in send
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "C:\Users\akash\AppData\Local\Python\pythoncore-3.14-64\Lib\http\client.py", line 1492, in connect
+    super().connect()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\akash\AppData\Local\Python\pythoncore-3.14-64\Lib\http\client.py", line 1023, in connect
+    self.sock = self._create_connection(
+                ~~~~~~~~~~~~~~~~~~~~~~~^
+        (self.host,self.port), self.timeout, self.source_address)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\akash\AppData\Local\Python\pythoncore-3.14-64\Lib\socket.py", line 846, in create_connection
+    for res in getaddrinfo(host, port, 0, SOCK_STREAM):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\akash\AppData\Local\Python\pythoncore-3.14-64\Lib\socket.py", line 983, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno 11001] getaddrinfo failed
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\akash\Downloads\zz\cinesubz_scraper.py", line 703, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "C:\Users\akash\Downloads\zz\cinesubz_scraper.py", line 649, in main
+    ver = verify_direct(cand, min_bytes, log=log)
+  File "C:\Users\akash\Downloads\zz\cinesubz_scraper.py", line 564, in verify_direct
+    status, headers, final, redirects = http_get_noredirect(url)
+                                        ~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\akash\Downloads\zz\cinesubz_scraper.py", line 259, in http_get_noredirect
+    with op.open(req, timeout=timeout) as r:
+         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\akash\AppData\Local\Python\pythoncore-3.14-64\Lib\urllib\request.py", line 487, in open
+    response = self._open(req, data)
+  File "C:\Users\akash\AppData\Local\Python\pythoncore-3.14-64\Lib\urllib\request.py", line 504, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+                              '_open', req)
+  File "C:\Users\akash\AppData\Local\Python\pythoncore-3.14-64\Lib\urllib\request.py", line 464, in _call_chain
+    result = func(*args)
+  File "C:\Users\akash\AppData\Local\Python\pythoncore-3.14-64\Lib\urllib\request.py", line 1369, in https_open
+    return self.do_open(http.client.HTTPSConnection, req,
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        context=self._context)
+                        ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\akash\AppData\Local\Python\pythoncore-3.14-64\Lib\urllib\request.py", line 1324, in do_open
+    raise URLError(err)
+urllib.error.URLError: <urlopen error [Errno 11001] getaddrinfo failed>

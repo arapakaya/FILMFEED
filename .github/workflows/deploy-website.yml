@@ -10,34 +10,29 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          
-      - name: Install dependencies
+          node-version: '20'
+
+      - name: Install Dependencies
         run: |
           cd filmfeed-website
           npm install
-        
-      - name: Build
+
+      - name: Build Next.js Site
         run: |
           cd filmfeed-website
           npm run build
-        
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: ./filmfeed-website
-          vercel-args: '--prod'
-          
-      - name: Get deployment URL
-        run: echo "✅ Deployed to Vercel"
+
+      - name: Deploy to Vercel Non-Interactively
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          cd filmfeed-website
+          npx vercel deploy --token "$VERCEL_TOKEN" --prod --yes

@@ -11,6 +11,19 @@ const GROUP_JID = process.env.GROUP_JID || ''; // Optional Group JID
 const DOWNLOAD_DIR = path.join(__dirname, 'downloads');
 const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB
 
+// Auto-restore session from WA_SESSION_DATA secret if present
+if (process.env.WA_SESSION_DATA) {
+    try {
+        const authDir = path.join(__dirname, 'auth_info_baileys');
+        fs.ensureDirSync(authDir);
+        const credsContent = Buffer.from(process.env.WA_SESSION_DATA, 'base64').toString('utf-8');
+        fs.writeFileSync(path.join(authDir, 'creds.json'), credsContent, 'utf-8');
+        console.log('✓ Restored WhatsApp session from WA_SESSION_DATA secret!');
+    } catch (e) {
+        console.error('Notice: Could not restore from WA_SESSION_DATA secret:', e.message);
+    }
+}
+
 // In-memory queue & user request tracking
 const requestQueue = [];
 let isProcessing = false;

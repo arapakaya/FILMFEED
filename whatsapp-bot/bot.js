@@ -7,7 +7,7 @@ const qrcode = require('qrcode-terminal');
 const { exec } = require('child_process');
 
 // Configuration
-const GROUP_JID = process.env.GROUP_JID || '120363354181677834@g.us';
+const GROUP_JID = process.env.GROUP_JID || ''; // Optional Group JID
 const DOWNLOAD_DIR = path.join(__dirname, 'downloads');
 const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB
 
@@ -107,11 +107,13 @@ async function downloadMovie(url, filename) {
  * Processes a single movie request sequentially
  */
 async function processRequest(sock, request) {
-    const { chatId, movieName, quality, token, requesterName, requesterJid, requestNum } = request;
-    const targetJid = GROUP_JID || chatId;
+    const { chatId, movieName, quality, token, requesterName, requestNum } = request;
+
+    // ALWAYS reply directly to chatId (the chat where request originated)
+    const targetJid = chatId;
 
     try {
-        console.log(`\n--- Processing Request #${requestNum} for ${requesterName}: ${movieName} (${quality}) ---`);
+        console.log(`\n--- Processing Request #${requestNum} for ${requesterName}: ${movieName} (${quality}) in ${chatId} ---`);
 
         await sock.sendMessage(targetJid, {
             text: `🎬 *Processing Request #${requestNum}*\n` +
@@ -184,7 +186,7 @@ async function processRequest(sock, request) {
 
         // Step 3: Upload Document
         await sock.sendMessage(targetJid, {
-            text: `📤 *Uploading file to WhatsApp group...*`
+            text: `📤 *Uploading file to WhatsApp...*`
         });
 
         await sock.sendMessage(targetJid, {
@@ -193,6 +195,20 @@ async function processRequest(sock, request) {
             mimetype: 'video/mp4',
             caption: `🎬 *${movieDetails.title}*\n🎥 Quality: ${quality}\n👤 Requested by: ${requesterName}`
         });
+
+        // Also forward copy to GROUP_JID if defined and different from targetJid
+        if (GROUP_JID && GROUP_JID !== targetJid) {
+            try {
+                await sock.sendMessage(GROUP_JID, {
+                    document: { url: filePath },
+                    fileName: `${movieDetails.title}_${quality}.mp4`,
+                    mimetype: 'video/mp4',
+                    caption: `🎬 *${movieDetails.title}*\n🎥 Quality: ${quality}\n👤 Requested by: ${requesterName}`
+                });
+            } catch (e) {
+                console.log('Group forward notice:', e.message);
+            }
+        }
 
         // Step 4: Delete file immediately
         await fs.remove(filePath);
@@ -236,17 +252,21 @@ async function processQueue(sock) {
 }
 
 function parseMovieRequest(message) {
-    let cleanMsg = message.replace(/^FilmFeed Request:\s*/i, '').trim();
+    if (!message || typeof message !== 'string') return null;
+
+    let cleanMsg = message.replace(/^(FilmFeed\s+)?Request:\s*/i, '').trim();
     const parts = cleanMsg.split('|').map(p => p.trim());
 
     if (parts.length >= 2) {
         let movieName = parts[0];
-        let quality = parts[1].replace(/Quality:\s*/i, '').trim();
-        let token = parts[2] ? parts[2].replace(/Token:\s*/i, '').trim() : '';
+        let quality = parts[1].replace(/^Quality:\s*/i, '').trim();
+        let token = parts[2] ? parts[2].replace(/^Token:\s*/i, '').trim() : '';
 
         if (movieName && quality) {
             return { movieName, quality, token };
         }
+    } else if (parts.length === 1 && cleanMsg.length > 2) {
+        return { movieName: cleanMsg, quality: '720p', token: 'direct' };
     }
 
     return null;
@@ -283,7 +303,6 @@ async function startBot() {
         } else if (connection === 'open') {
             console.log('==========================================');
             console.log('✓ FilmFeed WhatsApp Bot Connected Successfully!');
-            console.log('✓ Group JID:', GROUP_JID);
             console.log('==========================================');
         }
     });
@@ -293,15 +312,19 @@ async function startBot() {
         if (!msg.message || msg.key.fromMe) return;
 
         const messageText = msg.message.conversation ||
-                          msg.message.extendedTextMessage?.text || '';
+                          msg.message.extendedTextMessage?.text ||
+                          msg.message.imageMessage?.caption || '';
 
         const chatId = msg.key.remoteJid;
         const senderJid = msg.key.participant || msg.key.remoteJid;
         const pushName = msg.pushName || 'Member';
 
+        console.log(`Received message from ${pushName} (${chatId}): "${messageText}"`);
+
         const request = parseMovieRequest(messageText);
 
         if (request) {
+            console.log(`✓ Parsed Movie Request: "${request.movieName}" (${request.quality})`);
             userRequestCounts[senderJid] = (userRequestCounts[senderJid] || 0) + 1;
             const requestNum = userRequestCounts[senderJid];
 

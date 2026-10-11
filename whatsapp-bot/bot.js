@@ -33,6 +33,20 @@ const userRequestCounts = {}; // { userJid: count }
 fs.ensureDirSync(DOWNLOAD_DIR);
 
 /**
+ * Safe wrapper for sending WhatsApp messages without crashing on group/JID errors
+ */
+async function safeSendMessage(sock, jid, content) {
+    if (!jid) return false;
+    try {
+        await sock.sendMessage(jid, content);
+        return true;
+    } catch (error) {
+        console.error(`Warning: Could not send message to JID [${jid}]:`, error.message || error);
+        return false;
+    }
+}
+
+/**
  * Searches for movie / TV series details and direct link using Python scraper
  */
 async function searchMovieWithScraper(movieName, quality) {
@@ -122,13 +136,13 @@ async function downloadMovie(url, filename) {
 async function processRequest(sock, request) {
     const { chatId, movieName, quality, token, requesterName, requestNum } = request;
 
-    // ALWAYS reply directly to chatId (where request came from)
+    // ALWAYS reply directly to chatId (where the request originated)
     const targetJid = chatId;
 
     try {
         console.log(`\n--- Processing Request #${requestNum} for ${requesterName}: ${movieName} (${quality}) in ${chatId} ---`);
 
-        await sock.sendMessage(targetJid, {
+        await safeSendMessage(sock, targetJid, {
             text: `🎬 *Processing Request #${requestNum}*\n` +
                   `👤 *Requested by*: ${requesterName}\n` +
                   `🍿 *Movie/Series*: ${movieName}\n` +
@@ -139,7 +153,7 @@ async function processRequest(sock, request) {
         const movieDetails = await searchMovieWithScraper(movieName, quality);
 
         if (!movieDetails || !movieDetails.downloadUrl) {
-            await sock.sendMessage(targetJid, {
+            await safeSendMessage(sock, targetJid, {
                 text: `❌ Sorry *${requesterName}*, could not find "${movieName}".\n\n` +
                       `Please check title on https://filmfeed-website.vercel.app`
             });
@@ -150,7 +164,7 @@ async function processRequest(sock, request) {
         const fileSize = movieDetails.size_bytes || 0;
         if (fileSize > MAX_FILE_SIZE) {
             const sizeGB = (fileSize / (1024 * 1024 * 1024)).toFixed(2);
-            await sock.sendMessage(targetJid, {
+            await safeSendMessage(sock, targetJid, {
                 text: `⚠️ *File Exceeds WhatsApp 2GB Limit!*\n\n` +
                       `🎬 *Title*: ${movieDetails.title}\n` +
                       `🎥 *Quality*: ${movieDetails.quality || quality}\n` +
@@ -176,12 +190,12 @@ async function processRequest(sock, request) {
         detailsCaption += `⏳ *Downloading file to server... Please wait!*`;
 
         if (movieDetails.poster) {
-            await sock.sendMessage(targetJid, {
+            await safeSendMessage(sock, targetJid, {
                 image: { url: movieDetails.poster },
                 caption: detailsCaption
             });
         } else {
-            await sock.sendMessage(targetJid, { text: detailsCaption });
+            await safeSendMessage(sock, targetJid, { text: detailsCaption });
         }
 
         // Step 2: Download file
@@ -190,37 +204,33 @@ async function processRequest(sock, request) {
         const { filePath, size } = await downloadMovie(movieDetails.downloadUrl, filename);
 
         if (size > MAX_FILE_SIZE) {
-            await sock.sendMessage(targetJid, {
+            await safeSendMessage(sock, targetJid, {
                 text: `⚠️ *File Exceeds 2GB Limit!*\n\nDirect Download Link:\n${movieDetails.downloadUrl}`
             });
             await fs.remove(filePath);
             return;
         }
 
-        // Step 3: Upload Document
-        await sock.sendMessage(targetJid, {
+        // Step 3: Upload Document to requester
+        await safeSendMessage(sock, targetJid, {
             text: `📤 *Uploading file to WhatsApp...*`
         });
 
-        await sock.sendMessage(targetJid, {
+        await safeSendMessage(sock, targetJid, {
             document: { url: filePath },
             fileName: `${movieDetails.title}_${quality}.mp4`,
             mimetype: 'video/mp4',
             caption: `🎬 *${movieDetails.title}*\n🎥 Quality: ${quality}\n👤 Requested by: ${requesterName}`
         });
 
-        // Also forward copy to GROUP_JID if defined and different from targetJid
+        // Also forward copy to GROUP_JID if defined, valid, and different from targetJid
         if (GROUP_JID && GROUP_JID !== targetJid) {
-            try {
-                await sock.sendMessage(GROUP_JID, {
-                    document: { url: filePath },
-                    fileName: `${movieDetails.title}_${quality}.mp4`,
-                    mimetype: 'video/mp4',
-                    caption: `🎬 *${movieDetails.title}*\n🎥 Quality: ${quality}\n👤 Requested by: ${requesterName}`
-                });
-            } catch (e) {
-                console.log('Group forward notice:', e.message);
-            }
+            await safeSendMessage(sock, GROUP_JID, {
+                document: { url: filePath },
+                fileName: `${movieDetails.title}_${quality}.mp4`,
+                mimetype: 'video/mp4',
+                caption: `🎬 *${movieDetails.title}*\n🎥 Quality: ${quality}\n👤 Requested by: ${requesterName}`
+            });
         }
 
         // Step 4: Delete file immediately
@@ -228,13 +238,13 @@ async function processRequest(sock, request) {
         console.log(`✓ Deleted local file: ${filePath}`);
 
         // Step 5: Send Success Message
-        await sock.sendMessage(targetJid, {
+        await safeSendMessage(sock, targetJid, {
             text: `✅ *${requesterName}*, your movie "${movieDetails.title}" is uploaded!\n\n🍿 Enjoy watching!`
         });
 
     } catch (error) {
         console.error('Error processing request:', error);
-        await sock.sendMessage(targetJid, {
+        await safeSendMessage(sock, targetJid, {
             text: `❌ Error processing "${movieName}" for *${requesterName}*:\n${error.message}`
         });
     }
@@ -352,7 +362,7 @@ async function startBot() {
             const queuePosition = requestQueue.length;
 
             if (queuePosition === 1 && !isProcessing) {
-                await sock.sendMessage(chatId, {
+                await safeSendMessage(sock, chatId, {
                     text: `✅ *Request Received!*\n\n` +
                           `🎬 *Movie*: ${request.movieName}\n` +
                           `🎥 *Quality*: ${request.quality}\n` +
@@ -362,7 +372,7 @@ async function startBot() {
 
                 processQueue(sock);
             } else {
-                await sock.sendMessage(chatId, {
+                await safeSendMessage(sock, chatId, {
                     text: `✅ *Request Queued!*\n\n` +
                           `🎬 *Movie*: ${request.movieName}\n` +
                           `🎥 *Quality*: ${request.quality}\n` +
